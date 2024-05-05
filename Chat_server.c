@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <libc.h>
 
-//상호 채팅이 가능하게 함 : client도 listen호출
+
 int main(int argc, char* argv[]) {
 
     char* port = argv[1];
@@ -21,27 +21,37 @@ int main(int argc, char* argv[]) {
     //서버쪽에서도 이전과 마찬가지로 fin이 들어오기전 (read의 리턴값이 0이기 이전)까지 계속 받음
     listen(servSock,5);
 
-    int bytesRead;
-    char readBuf[1000];
-    char writeBuf[1000];
+
     while(1){
+        char readBuf[1000], writeBuf[1000];
+        int bytesRead;
+
         int clntSock = accept(servSock, (struct sockaddr*)&clntAddr, (socklen_t *) sizeof(clntAddr));
+        if(clntSock == -1){
+            perror("서버쪽에서 클라이언트 accept실패\n");
+        }
         //accept함수가 clntAddr에 값 넣어줌.
-        printf("[TCP클라이언트 정보] 클라이언트 IP주소:%s, 클라이언트 PORT번호:%d", inet_ntoa(clntAddr.sin_addr), clntAddr.sin_port);
-        printf("클라이언트의 입력을 대기 중...\n");
+        printf("[TCP클라이언트 정보] 클라이언트 IP주소:%s, 클라이언트 PORT번호:%d\n", inet_ntoa(clntAddr.sin_addr), clntAddr.sin_port);
+        //accept가 3번째 인자값이 socklent_t*인것과 다르게, socklent_t다(이유 원노트)
+        if(connect(servSock, (struct sockaddr*)&clntAddr, (socklen_t) sizeof(clntAddr)) == -1){
+            perror("서버쪽에서 클라이언트에 connect실패\n");
+        }
+        //printf("클라이언트의 입력을 대기 중...\n");
         bytesRead=read(clntSock,readBuf,sizeof(readBuf));
         if(bytesRead != 0) {
             readBuf[bytesRead] = '\0';
-            printf("입력받은 내용은: %s\n", readBuf);
+            printf("[클라이언트]: %s\n", readBuf);
             memset(readBuf, 0, sizeof(readBuf));
-            printf("출력받을 내용을 입력: ");
-            scanf("%s", writeBuf);
-            while(getchar())
         }
         else{
-
+            printf("\nread()의 반환값 0, FIN도착");
         }
+        printf("[to 클라이언트]: ");
+        //scanf("%s", writeBuf); 공백 입력 처리를 위해 fgets활용해야
+        fgets(writeBuf, sizeof(writeBuf), stdin);
+        while(getchar()!= '\n'); //입력버퍼 비워주기
+        //(클라->서버 메시지 전송 상황) 클라이언트가 서버에 write하고 서버가 read로 읽듯,
+        //(서버->클라 메시지 전송 상황) 마찬가지로 서버가 클라이언트에 write하고, 클라이언트에선 read를 통해 읽으면 된다.
+        write(clntSock, writeBuf, sizeof(readBuf));
     }
-    //그냥 강노 서버코드에서, 서버에서 입력받고, 클라이언트쪽으로 send해주는 함수를 사용하면 될 것이다.
-    //recvn은 뭘까?
 }
