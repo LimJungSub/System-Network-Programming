@@ -1,6 +1,6 @@
 <h2>ShellScript_with_Awk_Sed</h2>
 [환경]<br>
-VSC + WSL2 (Ubuntu 22.04)<br><br>
+(Windows)VSC + WSL2 (Ubuntu 22.04)<br><br>
 [과제 내용]<br>
 u.data(영화 리뷰 데이터), u.item(영화 목록 데이터), u.user(평가 유저 데이터) 파일들을 입력으로 한<br>
 sed, awk 및 linux, shell 명령어를 활용한 영화 평점 데이터 분류 / 가공<br><br>
